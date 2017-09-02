@@ -1,5 +1,6 @@
 package com.grouter.main;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -12,8 +13,9 @@ public class Segment {
     private Vector2 b;
     private float length;
     private float angle;
-    private Segment parent = null;
-    private Segment child = null;
+    private Segment parent;
+    private Segment child;
+    private Color color = Color.WHITE;
 
     public Segment(float x, float y, float length, float angle_from_x){
         a = new Vector2(x, y);
@@ -39,6 +41,7 @@ public class Segment {
         b.set(a.x + dx, a.y + dy);
     }
 
+    // set A position and angle to point towards target
     public void follow(float target_x, float target_y){
         Vector2 target = new Vector2(target_x, target_y);
         Vector2 dir = new Vector2(target_x - a.x, target_y - a.y);
@@ -63,6 +66,7 @@ public class Segment {
     }
 
     public void render(ShapeRenderer shapeRenderer){
+        shapeRenderer.setColor(color);
         shapeRenderer.rectLine(a.x, a.y, b.x, b.y, SEGMENT_WIDTH);
     }
 
@@ -78,9 +82,8 @@ public class Segment {
         calcB();
     }
 
-    public void setA(float x, float y) {
-        this.a.set(x, y);
-        calcB();
+    public void setColor(Color color) {
+        this.color = color;
     }
 
     public Vector2 getA() {
@@ -89,10 +92,6 @@ public class Segment {
 
     public Vector2 getB() {
         return b;
-    }
-
-    public Segment getChild() {
-        return child;
     }
 
     public Segment getParent() {

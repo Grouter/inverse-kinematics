@@ -2,6 +2,7 @@ package com.grouter.main;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -9,6 +10,10 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 public class Main extends ApplicationAdapter implements InputProcessor {
 
     static final float SEGMENT_WIDTH = 5f;
+
+    private final int segmentCount = 10;
+
+    private boolean followingMouse = true;
 
     private Tentacle tentacle;
 	private ShapeRenderer shapeRenderer;
@@ -22,7 +27,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 		Gdx.input.setInputProcessor(this);
 
-		tentacle = new Tentacle(width/2, height, 20, height/2);
+		tentacle = new Tentacle(width/2, height, segmentCount, height/2f);
 	}
 
 	@Override
@@ -44,6 +49,19 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
     @Override
     public boolean keyDown(int keycode) {
+	    if(keycode == Input.Keys.Q){
+            followingMouse = !followingMouse;
+            if (followingMouse){
+                tentacle.setTarget(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
+            }
+            return true;
+        }
+
+        if(keycode == Input.Keys.W){
+	        tentacle.setIgnoreBase(!tentacle.isIgnoreBase());
+	        return true;
+        }
+
         return false;
     }
 
@@ -59,6 +77,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+	    tentacle.setBase(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
         return false;
     }
 
@@ -74,7 +93,11 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
-        return false;
+        if(followingMouse){
+            tentacle.setTarget(Gdx.input.getX(),Gdx.graphics.getHeight() - Gdx.input.getY());
+            return true;
+        }
+	    return false;
     }
 
     @Override
