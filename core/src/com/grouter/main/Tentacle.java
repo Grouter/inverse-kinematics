@@ -42,10 +42,6 @@ public class Tentacle {
         target = new Vector2();
     }
 
-    public void removeBase(){
-        ignoreBase = true;
-    }
-
     public void update(){
         // last segment will follow target and others their children
         segments.get(segments.size() - 1).update(target.x, target.y);

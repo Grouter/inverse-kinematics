@@ -13,9 +13,11 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
     private final int segmentCount = 10;
 
-    private boolean followingMouse = true;
+    private boolean followingMouse = false;
+    private boolean bBallEnabled = true;
 
     private Tentacle tentacle;
+    private BouncingBall bouncingBall;
 	private ShapeRenderer shapeRenderer;
 
 	@Override
@@ -27,7 +29,8 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 		Gdx.input.setInputProcessor(this);
 
-		tentacle = new Tentacle(width/2, height, segmentCount, height/2f);
+		tentacle = new Tentacle(width/2, height, segmentCount, height);
+		bouncingBall = new BouncingBall(5f);
 	}
 
 	@Override
@@ -35,9 +38,16 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+		// updating
+		bouncingBall.update();
+        if(bBallEnabled){
+            tentacle.setTarget(bouncingBall.getPosition().x, bouncingBall.getPosition().y);
+        }
 		tentacle.update();
 
+		// rendering
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+		bouncingBall.render(shapeRenderer);
 		tentacle.render(shapeRenderer);
 		shapeRenderer.end();
 	}
@@ -51,6 +61,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
     public boolean keyDown(int keycode) {
 	    if(keycode == Input.Keys.Q){
             followingMouse = !followingMouse;
+            bBallEnabled = false;
             if (followingMouse){
                 tentacle.setTarget(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
             }
@@ -58,8 +69,14 @@ public class Main extends ApplicationAdapter implements InputProcessor {
         }
 
         if(keycode == Input.Keys.W){
-	        tentacle.setIgnoreBase(!tentacle.isIgnoreBase());
-	        return true;
+            bBallEnabled = !bBallEnabled;
+            followingMouse = false;
+            return true;
+        }
+
+        if(keycode == Input.Keys.E){
+            tentacle.setIgnoreBase(!tentacle.isIgnoreBase());
+            return true;
         }
 
         return false;
