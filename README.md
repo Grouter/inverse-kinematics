@@ -4,7 +4,9 @@ Made in LibGDX Java
 ## Controls
 Q -> toggle mouse following
 
-W -> toggle free tentacle movement (tentacle's root will be ignored)
+W -> toggle bouncing ball following
+
+E -> toggle free tentacle movement (tentacle's root will be ignored)
 
 Left click -> place tentacle base/root on cursor position
 
