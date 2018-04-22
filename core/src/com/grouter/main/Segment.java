@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
+import static com.grouter.main.Main.GRAVITY;
 import static com.grouter.main.Main.SEGMENT_WIDTH;
 
 public class Segment {
@@ -47,7 +48,7 @@ public class Segment {
         Vector2 dir = new Vector2(target_x - a.x, target_y - a.y);
         angle = dir.angle();
         dir.setLength(length);
-        dir.scl(-1, -1);
+        dir.scl(-1);
         a = target.add(dir);
     }
 

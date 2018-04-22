@@ -6,12 +6,14 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
 
 public class Main extends ApplicationAdapter implements InputProcessor {
 
     static final float SEGMENT_WIDTH = 5f;
+    static final Vector2 GRAVITY = new Vector2(0, -9.8f);
 
-    private final int segmentCount = 10;
+    private final int SEGMENT_COUNT = 50;
 
     private boolean followingMouse = false;
     private boolean bBallEnabled = true;
@@ -29,25 +31,27 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 		Gdx.input.setInputProcessor(this);
 
-		tentacle = new Tentacle(width/2, height, segmentCount, height);
-		bouncingBall = new BouncingBall(5f);
+		tentacle = new Tentacle(width/2, height, SEGMENT_COUNT, height);
+		bouncingBall = new BouncingBall(width/2f, height/2f, 5f, 10f);
 	}
 
 	@Override
 	public void render () {
-		Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-		// updating
-		bouncingBall.update();
+        // updating
         if(bBallEnabled){
+            bouncingBall.update();
             tentacle.setTarget(bouncingBall.getPosition().x, bouncingBall.getPosition().y);
         }
-		tentacle.update();
+        tentacle.update();
 
-		// rendering
+        Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1f);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        // rendering
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-		bouncingBall.render(shapeRenderer);
+		if(bBallEnabled){
+		    bouncingBall.render(shapeRenderer);
+        }
 		tentacle.render(shapeRenderer);
 		shapeRenderer.end();
 	}

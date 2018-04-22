@@ -6,6 +6,8 @@ import com.badlogic.gdx.math.Vector2;
 
 import java.util.ArrayList;
 
+import static com.grouter.main.Main.GRAVITY;
+
 public class Tentacle {
 
     private final float startingAngle = -90f;
@@ -65,7 +67,6 @@ public class Tentacle {
     }
 
     // GETTERS AND SETTERS
-
 
     public boolean isIgnoreBase() {
         return ignoreBase;

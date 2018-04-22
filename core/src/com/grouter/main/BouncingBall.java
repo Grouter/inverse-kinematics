@@ -7,14 +7,13 @@ import com.badlogic.gdx.math.Vector2;
 
 public class BouncingBall {
 
-    private float speed;
-    private float radius = 10;
+    private float radius;
     private Vector2 position;
     private Vector2 velocity;
 
-    public BouncingBall(float speed){
-        this.speed = speed;
-        position = new Vector2(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2);
+    public BouncingBall(float initial_x, float initial_y, float speed, float radius){
+        this.radius = radius;
+        position = new Vector2(initial_x, initial_y);
         velocity = new Vector2(speed, speed);
     }
 
