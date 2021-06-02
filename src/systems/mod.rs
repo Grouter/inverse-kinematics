@@ -8,7 +8,7 @@ use crate::float2::Float2;
 pub fn update_targets(targets: &mut [Float2], bases: &[Float2], main_target: &Float2) {
     targets[ENTITY_COUNT - 1] = *main_target;
 
-    for i in 0..ENTITY_COUNT - 1 {
+    for i in 0..(ENTITY_COUNT - 1) {
         targets[i] = bases[i + 1];
     }
 }
