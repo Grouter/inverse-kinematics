@@ -1,112 +1,80 @@
-mod arm;
+#[macro_use]
+extern crate glium;
+
 mod float2;
 mod systems;
+mod graphics;
+mod app;
 
-use glutin_window::GlutinWindow as Window;
-use opengl_graphics::{GlGraphics, OpenGL};
-use piston::event_loop::{EventSettings, Events};
-use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
-use piston::window::WindowSettings;
-use piston::MouseCursorEvent;
-use graphics::types::Rectangle;
-use graphics::{rectangle, clear};
+use std::time::{Instant, Duration};
+use glium::glutin::event_loop::{EventLoop, ControlFlow};
+use glium::glutin::event::{Event, WindowEvent};
+use glium::Surface;
 
 use crate::float2::Float2;
-use crate::arm::generate_segments;
-use crate::systems::*;
+use crate::graphics::create_display;
+use crate::app::App;
 
-const BG: [f32; 4] = [0.3, 0.3, 0.3, 1.0];
+const INITIAL_DISPLAY_SIZE: [u32; 2] = [1280, 720];
 
-pub const SEGMENT_LENGTH: f32 = 1.0;
-pub const SEGMENT_WIDTH: f32 = 4.0;
-pub const ENTITY_COUNT: usize = 800;
+const BG: [f32; 4] = [0.1, 0.1, 0.1, 1.0];
+const SEGMENT_COLOR: [f32; 3] = [1.0, 1.0, 1.0];
 
-pub struct App {
-    target: Float2,
-    base: Float2,
-    segment_shape: Rectangle,
-    bases: [Float2; ENTITY_COUNT],
-    directions: [Float2; ENTITY_COUNT],
-    targets: [Float2; ENTITY_COUNT],
-}
+pub const SEGMENT_LENGTH: f32 = 25.0;
+pub const SEGMENT_WIDTH: f32 = 10.0;
+pub const ENTITY_COUNT: usize = 100;
 
-impl App {
-    fn render(&mut self, gl: &mut GlGraphics, args: &RenderArgs) {
-        clear(BG, gl);
-
-        gl.draw(
-            args.viewport(),
-            |c, gl| {
-                render_segments(&c, gl, &self.bases, &self.directions, &self.segment_shape);
+fn handle_events(event: Event<()>, control_flow: &mut ControlFlow, app: &mut App) {
+    match event {
+        Event::WindowEvent { event, .. } => match event {
+            WindowEvent::CloseRequested => {
+                *control_flow = ControlFlow::Exit;
             }
-        );
+            WindowEvent::KeyboardInput { input, .. } => {
+                app.on_keyboard(input);
+            }
+            WindowEvent::CursorMoved { position, .. } => {
+                app.on_mouse_move(&position);
+            }
+            WindowEvent::Resized(size) => {
+                app.on_window_resize(&size);
+            }
+            _ => {},
+        }
+        Event::MainEventsCleared => {
+            // Logic
+            app.update();
 
-        self.base.x = args.window_size[0] as f32 / 2.0;
-    }
-
-    fn update(&mut self, _args: &UpdateArgs) {
-        
-        update_targets(&mut self.targets, &self.bases, &self.target);
-        
-        follow(&mut self.bases, &mut self.directions, &mut self.targets);
-
-        update_bases(&mut self.bases, &mut self.directions, &self.base);
-    }
-
-    fn on_mouse_move(&mut self, position: &[f64; 2]) {
-        self.target.x = position[0] as f32;
-        self.target.y = position[1] as f32;
+            // Graphics
+            let mut target = app.display.draw();
+            target.clear_color(BG[0], BG[1], BG[2], BG[3]);
+            app.render(&mut target);
+            target.finish().unwrap();
+        }
+        _ => (),
     }
 }
 
 fn main() {
-    let opengl = OpenGL::V3_2;
-
-    // Create an Glutin window.
-    let mut window: Window = WindowSettings::new("inverse_kinematics", [1280, 720])
-        .graphics_api(opengl)
-        .exit_on_esc(true)
-        .build()
-        .unwrap();
-
-    let mut gl: GlGraphics = GlGraphics::new(opengl);
-
-    let base = Float2::new(340.0, 0.0);
-
-    // Run the app
-    let mut app = App {
-        target: Float2::default(),
-        base: base,
-        segment_shape: rectangle::rectangle_by_corners(
-            0.0,
-            0.0,
-            SEGMENT_LENGTH as f64,
-            SEGMENT_WIDTH as f64
-        ),
-        bases: [Float2::default(); ENTITY_COUNT],
-        directions: [Float2::default(); ENTITY_COUNT],
-        targets: [Float2::default(); ENTITY_COUNT],
-    };
-
-    generate_segments(
-        &base, 
-        &Float2::new(0.0, 1.0), 
-        &mut app.bases, 
-        &mut app.directions
+    let event_loop = EventLoop::new();
+    let display = create_display(
+        &event_loop,
+        INITIAL_DISPLAY_SIZE[0],
+        INITIAL_DISPLAY_SIZE[1]
     );
 
-    let mut events = Events::new(EventSettings::new());
-    while let Some(e) = events.next(&mut window) {
-        if let Some(args) = e.mouse_cursor_args() {
-            app.on_mouse_move(&args);
-        }
+    let mut app = App::new(display);
 
-        if let Some(args) = e.update_args() {
-            app.update(&args);
-        }
+    app.generate_segments(&Float2::new(0.0, 1.0));
 
-        if let Some(args) = e.render_args() {
-            app.render(&mut gl, &args);
-        }
-    }
+    // Approx 60 FPS
+    let frame_time = Duration::from_nanos(16_666_667);
+
+    event_loop.run(move |event, _, control_flow| {
+        let next_frame_time = Instant::now() + frame_time;
+
+        *control_flow = ControlFlow::WaitUntil(next_frame_time);
+
+        handle_events(event, control_flow, &mut app);
+    });
 }
