@@ -9,3 +9,4 @@ edition = "2018"
 [dependencies]
 glium = "*"
 cgmath = "0.18.0"
+vecmath = "1.0.0"

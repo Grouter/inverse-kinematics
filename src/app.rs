@@ -1,11 +1,9 @@
-use std::u32;
-
 use glium::{Display, Frame, Program, Surface, VertexBuffer};
 use glium::glutin::event::KeyboardInput;
 use glium::glutin::dpi::{PhysicalPosition, PhysicalSize};
+use vecmath::{Matrix4, Vector2, vec2_add};
 
 use crate::{ENTITY_COUNT, INITIAL_DISPLAY_SIZE, SEGMENT_COLOR, SEGMENT_LENGTH, SEGMENT_WIDTH};
-use crate::float2::Float2;
 use crate::systems::*;
 use crate::graphics::*;
 
@@ -13,20 +11,20 @@ pub struct App {
     pub display: Display,
     pub display_size: PhysicalSize<u32>,
     
-    pub perspective: [[f32; 4]; 4],
+    pub perspective: Matrix4<f32>,
     pub segment_mesh: Mesh,
     pub shader: Program,
     pub instance_buffer: VertexBuffer<Transform>,
 
-    pub target: Float2,
-    pub base: Float2,
+    pub target: Vector2<f32>,
+    pub base: Vector2<f32>,
     pub components: Components,
 }
 
 pub struct Components {
-    pub bases: [Float2; ENTITY_COUNT],
-    pub directions: [Float2; ENTITY_COUNT],
-    pub targets: [Float2; ENTITY_COUNT],
+    pub bases: [Vector2<f32>; ENTITY_COUNT],
+    pub directions: [Vector2<f32>; ENTITY_COUNT],
+    pub targets: [Vector2<f32>; ENTITY_COUNT],
     pub transforms: [Transform; ENTITY_COUNT]
 }
 
@@ -47,9 +45,9 @@ impl App {
         );
 
         let components = Components {
-            bases: [Float2::default(); ENTITY_COUNT],
-            directions: [Float2::default(); ENTITY_COUNT],
-            targets: [Float2::default(); ENTITY_COUNT],
+            bases: [[0.0, 0.0]; ENTITY_COUNT],
+            directions: [[0.0, 0.0]; ENTITY_COUNT],
+            targets: [[0.0, 0.0]; ENTITY_COUNT],
             transforms: [default_transform(); ENTITY_COUNT] 
         };
 
@@ -73,21 +71,22 @@ impl App {
             shader,
             instance_buffer,
 
-            target: Float2::default(),
-            base: Default::default(),
+            target: [0.0, 0.0],
+            base: [0.0, 0.0],
             components
         }
     }
 
-    pub fn generate_segments(&mut self, dir: &Float2) {
+    pub fn generate_segments(&mut self, dir: &Vector2<f32>) {
         let mut start = self.base;
 
-        let offset = Float2::new(dir.x * SEGMENT_LENGTH, dir.y * SEGMENT_LENGTH);
+        let offset = [dir[0] * SEGMENT_LENGTH, dir[1] * SEGMENT_LENGTH];
     
         for i in 0..ENTITY_COUNT {
-            self.components.bases[i].set_as(&start);
+            self.components.bases[i][0] = start[0];
+            self.components.bases[i][1] = start[1];
     
-            start.add(offset.x, offset.y);
+            start = vec2_add(start, offset);
     
             self.components.directions[i] = *dir;
         }
@@ -140,8 +139,8 @@ impl App {
     }
 
     pub fn on_mouse_move(&mut self, position: &PhysicalPosition<f64>) {
-        self.target.x = position.x as f32;
-        self.target.y = position.y as f32;
+        self.target[0] = position.x as f32;
+        self.target[1] = position.y as f32;
     }
 
     pub fn on_window_resize(&mut self, size: &PhysicalSize<u32>) {

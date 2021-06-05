@@ -5,18 +5,19 @@ use glium::glutin::event_loop::EventLoop;
 use glium::glutin::window::WindowBuilder;
 use glium::glutin::ContextBuilder;
 use glium::index::PrimitiveType;
+use vecmath::{Matrix4, Vector2};
 use std::fs;
 
 #[derive(Copy, Clone)]
 pub struct Vertex {
-    position: [f32; 2],
+    position: Vector2<f32>,
     color: [f32; 3]
 }
 implement_vertex!(Vertex, position, color);
 
 #[derive(Copy, Clone)]
 pub struct Transform {
-    pub transform: [[f32; 4]; 4]
+    pub transform: Matrix4<f32>
 }
 implement_vertex!(Transform, transform);
 
@@ -27,15 +28,15 @@ pub struct Mesh {
 
 pub fn create_display(event_loop: &EventLoop<()>, w: u32, h: u32) -> Display {
     let display = Display::new(
-        WindowBuilder::new(),
+        WindowBuilder::new()
+            .with_inner_size(PhysicalSize {
+                width: w,
+                height: h
+            })
+            .with_title("Inverse Kinematics"),
         ContextBuilder::new(),
         &event_loop
     ).expect("Could not create display");
-
-    display.gl_window().resize(PhysicalSize {
-        width: w,
-        height: h
-    });
 
     display
 }
@@ -87,7 +88,7 @@ pub fn load_program(display: &Display, vertex_shader: &str, fragment_shader: &st
     ).expect("Error in shader program compilation")
 }
 
-pub fn perspective_left_handed(display_w: u32, display_h: u32) -> [[f32; 4]; 4] {
+pub fn perspective_left_handed(display_w: u32, display_h: u32) -> Matrix4<f32> {
     const Z_NEAR: f32 = -1.0;
     const Z_FAR: f32 = 1.0;
 

@@ -1,7 +1,6 @@
 #[macro_use]
 extern crate glium;
 
-mod float2;
 mod systems;
 mod graphics;
 mod app;
@@ -11,7 +10,6 @@ use glium::glutin::event_loop::{EventLoop, ControlFlow};
 use glium::glutin::event::{Event, WindowEvent};
 use glium::Surface;
 
-use crate::float2::Float2;
 use crate::graphics::create_display;
 use crate::app::App;
 
@@ -22,7 +20,7 @@ const SEGMENT_COLOR: [f32; 3] = [1.0, 1.0, 1.0];
 
 pub const SEGMENT_LENGTH: f32 = 25.0;
 pub const SEGMENT_WIDTH: f32 = 10.0;
-pub const ENTITY_COUNT: usize = 100;
+pub const ENTITY_COUNT: usize = 50;
 
 fn handle_events(event: Event<()>, control_flow: &mut ControlFlow, app: &mut App) {
     match event {
@@ -43,7 +41,9 @@ fn handle_events(event: Event<()>, control_flow: &mut ControlFlow, app: &mut App
         }
         Event::MainEventsCleared => {
             // Logic
+            let t = Instant::now();
             app.update();
+            println!("Update time: {} micros", t.elapsed().as_micros());
 
             // Graphics
             let mut target = app.display.draw();
@@ -65,7 +65,7 @@ fn main() {
 
     let mut app = App::new(display);
 
-    app.generate_segments(&Float2::new(0.0, 1.0));
+    app.generate_segments(&[0.0, 1.0]);
 
     // Approx 60 FPS
     let frame_time = Duration::from_nanos(16_666_667);
